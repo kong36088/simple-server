@@ -1,7 +1,0 @@
-/usr/local/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ -G "CodeBlocks - Unix Makefiles" /tmp/tmp.rdyrtC2zJf
-Boost 1.74.0 found.
-Found Boost components:
-   log
--- Configuring done
--- Generating done
--- Build files have been written to: /tmp/tmp.rdyrtC2zJf/cmake-build-debug

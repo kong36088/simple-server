@@ -1,1 +1,0 @@
-/usr/bin/g++   -g   CMakeFiles/wells_server.dir/main.cpp.o  -o wells_server 

@@ -52,7 +52,6 @@ target_link_libraries(${TARGET_NAME}
         PUBLIC ${Boost_STACKTRACE_ADDR2LINE_LIBRARY}
         PUBLIC ${Boost_STACKTRACE_NOOP_LIBRARY}
         PUBLIC ${Boost_LIBRARIES}
-        PUBLIC tafrouterapi
         PUBLIC Threads::Threads
         PUBLIC pthread dl)
 

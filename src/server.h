@@ -5,14 +5,26 @@
 #ifndef SIMPLE_SERVER_SERVER_H
 #define SIMPLE_SERVER_SERVER_H
 
+#include <netinet/in.h>
 
 class Server {
+protected:
+    int listenFd = -1;
+    bool running = true;
+    int serverFd = -1;
+
 public:
-    Server();
+    Server() {};
 
     void serve();
 
-    static static void setNonBlocking(int sock);
+    int acceptConn() const;
+
+    int readFrom(int fd);
+
+    int writeTo(int fd);
+
+    static void setNonBlocking(int sock);
 };
 
 
