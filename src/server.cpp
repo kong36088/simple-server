@@ -107,7 +107,7 @@ int Server::acceptConn() const {
 
 int Server::readFrom(int fd) {
     static char buffer[MAX_LINE];
-    int received = recv(fd, buffer, sizeof buffer, 0);
+    int received = recv(fd, buffer, sizeof buffer, MSG_WAITALL);
     if (received > 0) {
         LOG_SEV_WITH_LOC("get msg: " << buffer, debug);
     }
