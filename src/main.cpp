@@ -1,10 +1,10 @@
 #include "logger.h"
-#include "server.h"
+#include "ServerHandler.h"
+#include "IOLoop.h"
 
 int main() {
     gInitLog(debug, debug);
 
-    Server s;
-
-    s.serve();
+    ServerHandler server(5555);
+    IOLoop::getInstance()->start();
 }

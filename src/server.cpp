@@ -34,7 +34,7 @@ void Server::serve() {
     //声明epoll_event结构体的变量, ev用于注册事件, events数组用于回传要处理的事件
     struct epoll_event ev{}, events[20];
     //生成用于处理accept的epoll专用的文件描述符, 指定生成描述符的最大范围为256
-    epfd = epoll_create(256);
+    epfd = epoll_create1(0);
     struct sockaddr_in serverAddr{};
     listenFd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -47,7 +47,9 @@ void Server::serve() {
     const char *local_addr = "0.0.0.0";
     inet_aton(local_addr, &(serverAddr.sin_addr));
     serverAddr.sin_port = htons(SERV_PORT);  //或者htons(SERV_PORT);
-    serverFd = bind(listenFd, (sockaddr *) &serverAddr, sizeof(serverAddr));
+    if (bind(listenFd, (sockaddr *) &serverAddr, sizeof(serverAddr)) < 0) {
+        LOG_SEV_WITH_LOC("bind address failed", fatal);
+    }
     listen(listenFd, LISTENQ);
     while (running) {
         nfds = epoll_wait(epfd, events, 20, 500); //等待epoll事件的发生

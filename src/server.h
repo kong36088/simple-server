@@ -11,7 +11,6 @@ class Server {
 protected:
     int listenFd = -1;
     bool running = true;
-    int serverFd = -1;
 
 public:
     Server() {};
