@@ -5,6 +5,6 @@
 int main() {
     gInitLog(debug, debug);
 
-    ServerHandler server(5555);
+    ServerHandler server(SERV_PORT);
     IOLoop::getInstance()->start();
 }

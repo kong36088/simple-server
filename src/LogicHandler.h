@@ -9,6 +9,7 @@
 #include "Handler.h"
 #include "configs.h"
 #include <cstring>
+#include "logger.h"
 
 class LogicHandler : public Handler {
 private:
@@ -20,6 +21,10 @@ public:
     };
 
     int handle(epoll_event) override;
+
+    ~LogicHandler() {
+        LOG_SEV_WITH_LOC("LogicHandler destroyed", debug);
+    }
 };
 
 

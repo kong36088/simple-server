@@ -11,7 +11,11 @@ void IOLoop::start() {
         for (int i = 0; i < nFds; i++) {
             int fd = events[i].data.fd;
             auto handler = handlers_[fd];
-            handler->handle(events[i]);
+            if (handler) {
+                handler->handle(events[i]);
+            } else {
+                LOG_SEV_WITH_LOC("get empty handler, give up, fd:" << fd, error);
+            }
         }
     }
 }

@@ -7,11 +7,11 @@
 
 #include <sys/epoll.h>
 
-class Handler {
+class Handler{
 public:
-    Handler() {};
+    Handler() = default;
 
-    virtual int handle(epoll_event event);
+    virtual int handle(epoll_event event) {};
 };
 
 #endif //SIMPLE_SERVER_HANDLER_H

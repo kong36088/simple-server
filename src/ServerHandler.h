@@ -9,16 +9,21 @@
 #include "Handler.h"
 #include "configs.h"
 #include <cstring>
+#include "logger.h"
 
 class ServerHandler : public Handler {
 private:
     int serverFd = -1;
 public:
-    ServerHandler()=delete;
+    ServerHandler() = default;
 
     explicit ServerHandler(int port);
 
     int handle(epoll_event) override;
+
+    ~ServerHandler() {
+        LOG_SEV_WITH_LOC("ServerHandler destroyed", debug);
+    }
 };
 
 

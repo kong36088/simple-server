@@ -25,10 +25,11 @@ int LogicHandler::handle(epoll_event event) {
 
     if (events & EPOLLIN) {
         int received = recv(fd, buffer_, sizeof buffer_, MSG_WAITALL);
-        if (received >= 0) {
+        if (received > 0) {
             memcpy(input_, buffer_, received);
             IOLoop::getInstance()->modify(fd, EPOLLOUT | EPOLLET);
         } else {
+            input_[0] = 0;
             close(fd);
             LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
             IOLoop::getInstance()->remove(fd);

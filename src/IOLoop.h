@@ -22,7 +22,7 @@ class IOLoop {
 private:
     int epollFd_;
     std::unordered_map<int, std::shared_ptr<Handler>> handlers_;
-    bool running = false;
+    bool running = true;
 
     IOLoop() {
         epollFd_ = epoll_create1(0);

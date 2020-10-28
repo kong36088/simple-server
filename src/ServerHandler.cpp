@@ -18,13 +18,18 @@ ServerHandler::ServerHandler(int port) {
 
     bzero(&serverAddr, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
-    const char *local_addr = "0.0.0.0";
-    inet_aton(local_addr, &(serverAddr.sin_addr));
+    const char *localAddr = "0.0.0.0";
+    inet_aton(localAddr, &(serverAddr.sin_addr));
     serverAddr.sin_port = htons(port);
-    serverFd = bind(serverFd, (sockaddr *) &serverAddr, sizeof(serverAddr));
+    if (bind(serverFd, (sockaddr *) &serverAddr, sizeof(serverAddr)) < 0) {
+        LOG_SEV_WITH_LOC("bind address failed", fatal);
+        exit(-1);
+    }
     listen(serverFd, LISTENQ);
-    std::shared_ptr<Handler> handler(this);
-    IOLoop::getInstance()->add(serverFd, handler, EPOLLIN | EPOLLOUT | EPOLLET);
+    std::shared_ptr<Handler> handler = std::shared_ptr<Handler>(new ServerHandler);
+    IOLoop::getInstance()->add(serverFd, handler, EPOLLIN | EPOLLET);
+
+    LOG_SEV_WITH_LOC("start listening " << localAddr << ":" << port, debug);
 }
 
 int ServerHandler::handle(epoll_event event) {
@@ -38,7 +43,7 @@ int ServerHandler::handle(epoll_event event) {
         return -1;
     }
 
-    LOG_SEV_WITH_LOC("accept new client, client:" << inet_ntoa(clientAddr.sin_addr) << "port: " << ntohs(clientAddr.sin_port) << "fd:" << clientFd, debug);
+    LOG_SEV_WITH_LOC("accept new client, client:" << inet_ntoa(clientAddr.sin_addr) << " port: " << ntohs(clientAddr.sin_port) << " fd:" << clientFd, debug);
     std::shared_ptr<Handler> handler(new LogicHandler());
     IOLoop::getInstance()->add(clientFd, handler, EPOLLIN | EPOLLOUT | EPOLLET);
 

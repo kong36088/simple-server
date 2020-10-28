@@ -49,6 +49,7 @@ void Server::serve() {
     serverAddr.sin_port = htons(SERV_PORT);  //或者htons(SERV_PORT);
     if (bind(listenFd, (sockaddr *) &serverAddr, sizeof(serverAddr)) < 0) {
         LOG_SEV_WITH_LOC("bind address failed", fatal);
+        exit(1);
     }
     listen(listenFd, LISTENQ);
     while (running) {
