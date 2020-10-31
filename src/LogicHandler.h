@@ -20,7 +20,7 @@ public:
         memset(input_, 0, sizeof input_);
     };
 
-    int handle(epoll_event) override;
+    int handle(epoll_event e) override;
 
     ~LogicHandler() {
         LOG_SEV_WITH_LOC("LogicHandler destroyed", debug);

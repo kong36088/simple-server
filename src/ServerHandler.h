@@ -19,7 +19,7 @@ public:
 
     explicit ServerHandler(int port);
 
-    int handle(epoll_event) override;
+    int handle(epoll_event e) override;
 
     ~ServerHandler() {
         LOG_SEV_WITH_LOC("ServerHandler destroyed", debug);

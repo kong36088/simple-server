@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstring>
 #include "IOLoop.h"
+#include <cstring>
 
 int LogicHandler::handle(epoll_event event) {
     int fd = event.data.fd;
@@ -23,9 +24,20 @@ int LogicHandler::handle(epoll_event event) {
         return -1;
     }
 
+    if (events & EPOLLOUT) {
+        int written = write(fd, input_, strlen(input_));
+        LOG_SEV_WITH_LOC("send:" << input_, debug);
+        if (written < 0) {
+            LOG_SEV_WITH_LOC("write failed, fd:" << fd, error);
+        }
+
+        IOLoop::getInstance()->modify(fd, EPOLLIN | EPOLLET);
+    }
+
     if (events & EPOLLIN) {
         int received = recv(fd, buffer_, sizeof buffer_, MSG_WAITALL);
         if (received > 0) {
+            LOG_SEV_WITH_LOC("receive:" << buffer_, debug);
             memcpy(input_, buffer_, received);
             IOLoop::getInstance()->modify(fd, EPOLLOUT | EPOLLET);
         } else {
@@ -34,13 +46,6 @@ int LogicHandler::handle(epoll_event event) {
             LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
             IOLoop::getInstance()->remove(fd);
         }
-    } else if (events & EPOLLOUT) {
-        int written = send(fd, input_, sizeof input_, 0);
-        if (written < 0) {
-            LOG_SEV_WITH_LOC("write failed, fd:" << fd, error);
-        }
-
-        IOLoop::getInstance()->modify(fd, EPOLLIN | EPOLLET);
     }
     return 0;
 }
