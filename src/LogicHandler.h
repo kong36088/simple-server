@@ -10,15 +10,14 @@
 #include "configs.h"
 #include <cstring>
 #include "logger.h"
+#include "Http.h"
 
 class LogicHandler : public Handler {
 private:
     char buffer_[MAX_LINE];
-    char input_[MAX_LINE];
+    Http http;
 public:
-    LogicHandler() : Handler() {
-        memset(input_, 0, sizeof input_);
-    };
+    LogicHandler() : Handler() {};
 
     int handle(epoll_event e) override;
 

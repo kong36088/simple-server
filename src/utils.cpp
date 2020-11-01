@@ -19,3 +19,16 @@ void setNonBlocking(int sock) {
         return;
     }
 }
+
+void splitString(const std::string &s, std::vector<std::string> &sv, const char *delimiter = " ") {
+    sv.clear();
+    char *buffer = new char[s.size() + 1];
+    buffer[s.size()] = '\0';
+    std::copy(s.begin(), s.end(), buffer);
+    char *p = std::strtok(buffer, delimiter);
+    do {
+        sv.emplace_back(p);
+    } while ((p = std::strtok(NULL, delimiter)));
+    delete[] buffer;
+    return;
+}

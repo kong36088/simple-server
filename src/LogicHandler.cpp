@@ -25,8 +25,16 @@ int LogicHandler::handle(epoll_event event) {
     }
 
     if (events & EPOLLOUT) {
-        int written = write(fd, input_, strlen(input_));
-        LOG_SEV_WITH_LOC("send:" << input_, debug);
+        int written = -1;
+        try {
+            auto property = http.parse(buffer_);
+             written = write(fd, property->body.c_str(), property->body.size());
+        } catch (Exception e) {
+            auto msg = e.what();
+            written = write(fd, msg, strlen(msg));
+
+        }
+        LOG_SEV_WITH_LOC("send:" << buffer_, debug);
         if (written < 0) {
             LOG_SEV_WITH_LOC("write failed, fd:" << fd, error);
         }
@@ -38,10 +46,8 @@ int LogicHandler::handle(epoll_event event) {
         int received = recv(fd, buffer_, sizeof buffer_, MSG_WAITALL);
         if (received > 0) {
             LOG_SEV_WITH_LOC("receive:" << buffer_, debug);
-            memcpy(input_, buffer_, received);
             IOLoop::getInstance()->modify(fd, EPOLLOUT | EPOLLET);
         } else {
-            input_[0] = 0;
             close(fd);
             LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
             IOLoop::getInstance()->remove(fd);

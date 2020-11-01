@@ -46,7 +46,5 @@ void IOLoop::modify(int fd, unsigned int events) {
 
 void IOLoop::remove(int fd) {
     handlers_.erase(fd);
-    if (epoll_ctl(epollFd_, EPOLL_CTL_DEL, fd, nullptr) < 0) {
-        LOG_SEV_WITH_LOC("failed to delete epoll event, fd: " << fd, error);
-    }
+    epoll_ctl(epollFd_, EPOLL_CTL_DEL, fd, nullptr);
 }
