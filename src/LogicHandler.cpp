@@ -26,15 +26,15 @@ int LogicHandler::handle(epoll_event event) {
 
     if (events & EPOLLOUT) {
         int written = -1;
+        const char* msg;
         try {
             auto property = http.parse(buffer_);
-             written = write(fd, property->body.c_str(), property->body.size());
+            msg = property->url.c_str();
         } catch (Exception e) {
-            auto msg = e.what();
-            written = write(fd, msg, strlen(msg));
-
+            msg = e.what();
         }
-        LOG_SEV_WITH_LOC("send:" << buffer_, debug);
+        written = write(fd, msg, strlen(msg));
+        LOG_SEV_WITH_LOC("send:" << msg, debug);
         if (written < 0) {
             LOG_SEV_WITH_LOC("write failed, fd:" << fd, error);
         }

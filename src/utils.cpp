@@ -20,15 +20,28 @@ void setNonBlocking(int sock) {
     }
 }
 
-void splitString(const std::string &s, std::vector<std::string> &sv, const char *delimiter = " ") {
+void splitString(const std::string &s, std::vector<std::string> &sv, const char *delimiter) {
+    splitString(s, sv, delimiter, -1);
+}
+
+void splitString(const std::string &s, std::vector<std::string> &sv, const char *delimiter, int limit) {
     sv.clear();
-    char *buffer = new char[s.size() + 1];
-    buffer[s.size()] = '\0';
-    std::copy(s.begin(), s.end(), buffer);
-    char *p = std::strtok(buffer, delimiter);
-    do {
-        sv.emplace_back(p);
-    } while ((p = std::strtok(NULL, delimiter)));
-    delete[] buffer;
+    std::string token;
+    int pos = 0, offset = 0, i = 0, deliLen = strlen(delimiter);
+    if (limit < 0) {
+        limit = INT32_MAX;
+    }
+    while ((pos = s.find(delimiter, offset)) != std::string::npos && i < limit) {
+        token = s.substr(offset, pos - offset);
+        sv.emplace_back(token);
+        offset = pos + deliLen;
+        ++i;
+    }
+    if (offset < s.size()) {
+        token = s.substr(offset);
+        sv.emplace_back(token);
+    } else if (offset == s.size()) {
+        sv.emplace_back("");
+    }
     return;
 }

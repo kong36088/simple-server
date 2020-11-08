@@ -24,6 +24,7 @@ std::shared_ptr<HttpProperty> Http::doParse(const std::string &req) throw(Except
     std::vector<std::string> splitReq;
     splitString(req, splitReq, "\r\n");
 
+
     std::shared_ptr<HttpProperty> property(new HttpProperty);
     int index;
     if (splitReq.size() < 2) {
@@ -32,7 +33,7 @@ std::shared_ptr<HttpProperty> Http::doParse(const std::string &req) throw(Except
 
     // parse http version
     std::vector<std::string> httpVersion;
-    splitString(splitReq[0], httpVersion, " ");
+    splitString(splitReq[0], httpVersion, " ", 2);
     if (httpVersion.size() != 3) {
         throw Exception("can not parse http version info");
     }
@@ -46,15 +47,19 @@ std::shared_ptr<HttpProperty> Http::doParse(const std::string &req) throw(Except
         if (splitReq[index].empty()) {
             break;
         }
-        splitString(splitReq[index], header, ":");
+        splitString(splitReq[index], header, ":", 1);
         if (header.size() > 1) {
             property->headers[header[0]] = header[1];
         }
     }
     // parse body
     if (index + 1 < splitReq.size()) {
-        property->body = boost::algorithm::join(splitReq, "\r\n");
+        property->body = boost::algorithm::join(std::move(std::vector<std::string>(splitReq.begin() + index + 1, splitReq.end())), "\r\n");
     }
+    for (auto it = property->headers.begin(); it != property->headers.end(); it++) {
+        std::cout << "header:" << it->first << ":" << it->second << std::endl;
+    }
+    std::cout << "body" << property->body << std::endl;
 
     return property;
 }

@@ -7,10 +7,14 @@
 
 #include "iostream"
 #include <vector>
+#include <cstdint>
+
 
 extern void setNonBlocking(int sock);
 
 extern void splitString(const std::string &s, std::vector<std::string> &sv, const char *delimiter);
+
+extern void splitString(const std::string &s, std::vector<std::string> &sv, const char *delimiter, int limit);
 
 
 #endif //SIMPLE_SERVER_UTILS_H
