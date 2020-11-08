@@ -25,25 +25,30 @@ int LogicHandler::handle(epoll_event event) {
     }
 
     if (events & EPOLLOUT) {
-        int written = -1;
-        const char* msg;
-        try {
-            auto property = http.parse(buffer_);
-            msg = property->url.c_str();
-        } catch (Exception e) {
-            msg = e.what();
+        if (strlen(buffer_) > 0) {
+            int written = -1;
+            const char *msg;
+            try {
+                auto property = http.parse(buffer_);
+                std::shared_ptr<HttpProperty> rspProperty(new HttpProperty());
+                rspProperty->httpVersion = property->httpVersion;
+                rspProperty->body = property->body;
+                msg = http.encode(rspProperty, 200, "OK").c_str();
+            } catch (Exception e) {
+                msg = e.what();
+            }
+            written = write(fd, msg, strlen(msg));
+            LOG_SEV_WITH_LOC("send:" << msg, debug);
+            if (written < 0) {
+                LOG_SEV_WITH_LOC("write failed, fd:" << fd, error);
+            }
         }
-        written = write(fd, msg, strlen(msg));
-        LOG_SEV_WITH_LOC("send:" << msg, debug);
-        if (written < 0) {
-            LOG_SEV_WITH_LOC("write failed, fd:" << fd, error);
-        }
-
         IOLoop::getInstance()->modify(fd, EPOLLIN | EPOLLET);
     }
 
     if (events & EPOLLIN) {
         int received = recv(fd, buffer_, sizeof buffer_, MSG_WAITALL);
+        buffer_[received] = 0;
         if (received > 0) {
             LOG_SEV_WITH_LOC("receive:" << buffer_, debug);
             IOLoop::getInstance()->modify(fd, EPOLLOUT | EPOLLET);

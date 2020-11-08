@@ -6,6 +6,7 @@
 #include "utils.h"
 #include <iterator>
 #include <boost/algorithm/string/join.hpp>
+#include <sstream>
 
 std::shared_ptr<HttpProperty> Http::parse(const std::string &&req) throw(Exception) {
     return doParse(req);
@@ -56,12 +57,29 @@ std::shared_ptr<HttpProperty> Http::doParse(const std::string &req) throw(Except
     if (index + 1 < splitReq.size()) {
         property->body = boost::algorithm::join(std::move(std::vector<std::string>(splitReq.begin() + index + 1, splitReq.end())), "\r\n");
     }
+#ifdef DEBUG
     for (auto it = property->headers.begin(); it != property->headers.end(); it++) {
         std::cout << "header:" << it->first << ":" << it->second << std::endl;
     }
-    std::cout << "body" << property->body << std::endl;
+    std::cout << "body:" << property->body << std::endl;
+#endif
 
     return property;
 }
 
-void reset();
+void Http::reset() noexcept {}
+
+std::string Http::encode(std::shared_ptr<HttpProperty> property, int code, const std::string& codeMsg) {
+    std::stringstream ss;
+
+    ss << property->httpVersion << " " << code << " " << codeMsg << "\r\n";
+    if (property->headers.find("Content-Length") == property->headers.end()) {
+        property->headers["Content-Length"] = std::to_string(property->body.size());
+    }
+    for (auto it = property->headers.begin(); it != property->headers.end(); ++it) {
+        ss << it->first << ": " << it->second << "\r\n";
+    }
+    ss << "\r\n" << property->body;
+
+    return ss.str();
+}

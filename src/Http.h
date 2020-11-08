@@ -23,6 +23,9 @@ public:
 
     void reset() noexcept;
 
+    // todo 分离 req property 和 rsp property
+    std::string encode(std::shared_ptr<HttpProperty> property, int code, const std::string& codeMsg);
+
 protected:
     std::shared_ptr<HttpProperty> doParse(const std::string &req) throw(Exception);
 };
