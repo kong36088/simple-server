@@ -16,6 +16,7 @@ int LogicHandler::handle(epoll_event event) {
 
     if (events & EPOLLHUP) {
         LOG_SEV_WITH_LOC("get HUP from fd:" << fd, debug);
+        close(fd);
         IOLoop::getInstance()->remove(fd);
         return -1;
     }
@@ -42,8 +43,12 @@ int LogicHandler::handle(epoll_event event) {
             if (written < 0) {
                 LOG_SEV_WITH_LOC("write failed, fd:" << fd, error);
             }
+            close(fd);
+            IOLoop::getInstance()->remove(fd);
+        } else {
+            IOLoop::getInstance()->modify(fd, EPOLLIN | EPOLLET);
         }
-        IOLoop::getInstance()->modify(fd, EPOLLIN | EPOLLET);
+        buffer_[0] = 0;
     }
 
     if (events & EPOLLIN) {
