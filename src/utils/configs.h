@@ -6,6 +6,7 @@
 #define LISTENQ 20
 #define SERV_PORT 5555
 #define INFTIM 1000
+#define MAX_REACTOR 8
 
 
 #endif

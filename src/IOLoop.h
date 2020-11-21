@@ -17,12 +17,17 @@
 #include "logger.h"
 #include <unordered_map>
 #include "Handler.h"
+#include "SafeQueue.h"
+#include "LoopEvent.h"
+#include <future>
+
 
 class IOLoop {
 private:
     int epollFd_;
     std::unordered_map<int, std::shared_ptr<Handler>> handlers_;
     bool running = true;
+    std::future<void> reactorFus[MAX_REACTOR];
 
     IOLoop() {
         epollFd_ = epoll_create1(0);
@@ -47,6 +52,12 @@ public:
     void modify(int fd, unsigned int events);
 
     void remove(int fd);
+
+    void static reactor();
+
+    bool isRunning() const {
+        return running;
+    }
 };
 
 
