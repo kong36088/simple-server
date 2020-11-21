@@ -22,7 +22,6 @@ void IOLoop::start() {
     LOG_SEV_WITH_LOC("simple-server: start serving", debug);
     while (isRunning()) {
         int nFds = epoll_wait(epollFd_, events, LISTENQ, -1);
-        LOG_SEV_WITH_LOC("get nFds" << nFds, debug);
         for (int i = 0; i < nFds; i++) {
             int fd = events[i].data.fd;
             auto handler = handlers_[fd];

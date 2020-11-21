@@ -10,6 +10,9 @@
 #include "IOLoop.h"
 #include <cstring>
 
+
+// todo handler 池化
+// todo 设置一个 fd buffer map
 int LogicHandler::handle(epoll_event event) {
     int fd = event.data.fd;
     uint32_t events = event.events;
@@ -29,6 +32,7 @@ int LogicHandler::handle(epoll_event event) {
         if (strlen(buffer_) > 0) {
             int written = -1;
             const char *msg;
+            LOG_SEV_WITH_LOC("buffer:" << buffer_, debug);
             try {
                 auto property = http.parse(buffer_);
                 std::shared_ptr<HttpProperty> rspProperty(new HttpProperty());
@@ -53,11 +57,13 @@ int LogicHandler::handle(epoll_event event) {
 
     if (events & EPOLLIN) {
         int received = recv(fd, buffer_, sizeof buffer_, MSG_WAITALL);
-        buffer_[received] = 0;
+        LOG_SEV_WITH_LOC("received length:" << std::to_string(received), debug);
         if (received > 0) {
+            buffer_[received] = 0;
             LOG_SEV_WITH_LOC("receive:" << buffer_, debug);
             IOLoop::getInstance()->modify(fd, EPOLLOUT | EPOLLET);
         } else {
+            buffer_[0] = 0;
             close(fd);
             LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
             IOLoop::getInstance()->remove(fd);

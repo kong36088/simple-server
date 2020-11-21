@@ -14,7 +14,7 @@
 
 class LogicHandler : public Handler {
 private:
-    char buffer_[MAX_LINE];
+    char buffer_[MAX_LINE] = {0};
     Http http;
 public:
     LogicHandler() : Handler() {};
