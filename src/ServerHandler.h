@@ -12,9 +12,9 @@
 #include "logger.h"
 
 class ServerHandler : public Handler {
-private:
-    int serverFd = -1;
 public:
+    static int serverFd;
+
     ServerHandler() = default;
 
     explicit ServerHandler(int port);

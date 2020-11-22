@@ -11,17 +11,18 @@
 #include "utils/utils.h"
 #include "LogicHandler.h"
 
+int ServerHandler::serverFd = -1;
 ServerHandler::ServerHandler(int port) {
     sockaddr_in serverAddr;
 
     // create socket
-    serverFd = socket(AF_INET, SOCK_STREAM, 0);
-    setNonBlocking(serverFd); // non-blocking
-    LOG_SEV_WITH_LOC("server listen fd: " << serverFd, debug);
+    ServerHandler::serverFd = socket(AF_INET, SOCK_STREAM, 0);
+    setNonBlocking(ServerHandler::serverFd); // non-blocking
+    LOG_SEV_WITH_LOC("server listen fd: " << ServerHandler::serverFd, debug);
 
     // start epoll
     std::shared_ptr<Handler> handler = std::shared_ptr<Handler>(new ServerHandler);
-    IOLoop::getInstance()->add(serverFd, handler, EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLERR | EPOLLET);
+    IOLoop::getInstance()->add(ServerHandler::serverFd, handler, EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLERR | EPOLLET);
 
     // bind address
     bzero(&serverAddr, sizeof(serverAddr));
@@ -29,11 +30,11 @@ ServerHandler::ServerHandler(int port) {
     const char *localAddr = "0.0.0.0";
     inet_aton(localAddr, &(serverAddr.sin_addr));
     serverAddr.sin_port = htons(port);
-    if (bind(serverFd, (sockaddr *) &serverAddr, sizeof(serverAddr)) < 0) {
+    if (bind(ServerHandler::serverFd, (sockaddr *) &serverAddr, sizeof(serverAddr)) < 0) {
         LOG_SEV_WITH_LOC("bind address failed", fatal);
         exit(-1);
     }
-    listen(serverFd, LISTENQ);
+    listen(ServerHandler::serverFd, LISTENQ);
 
     LOG_SEV_WITH_LOC("start listening " << localAddr << ":" << port, debug);
 }

@@ -9,22 +9,27 @@
 #include <cstring>
 #include "IOLoop.h"
 #include <cstring>
+#include <errno.h>
 
 
 // todo handler 池化
 // todo 设置一个 fd buffer map
+// todo handler 非线程安全，改为只用一个线程操作读写
 int LogicHandler::handle(epoll_event event) {
     int fd = event.data.fd;
     uint32_t events = event.events;
 
     if (events & EPOLLHUP) {
         LOG_SEV_WITH_LOC("get HUP from fd:" << fd, debug);
-        close(fd);
         IOLoop::getInstance()->remove(fd);
+        close(fd);
         return -1;
     }
 
     if (events & EPOLLERR) {
+        LOG_SEV_WITH_LOC("get HUP from fd:" << fd, debug);
+        IOLoop::getInstance()->remove(fd);
+        close(fd);
         return -1;
     }
 
@@ -32,9 +37,9 @@ int LogicHandler::handle(epoll_event event) {
         if (strlen(buffer_) > 0) {
             int written = -1;
             const char *msg;
-            LOG_SEV_WITH_LOC("buffer:" << buffer_, debug);
+            LOG_SEV_WITH_LOC("input:" << input, debug);
             try {
-                auto property = http.parse(buffer_);
+                auto property = http.parse(input);
                 std::shared_ptr<HttpProperty> rspProperty(new HttpProperty());
                 rspProperty->httpVersion = property->httpVersion;
                 rspProperty->body = property->body;
@@ -47,8 +52,8 @@ int LogicHandler::handle(epoll_event event) {
             if (written < 0) {
                 LOG_SEV_WITH_LOC("write failed, fd:" << fd, error);
             }
-            close(fd);
             IOLoop::getInstance()->remove(fd);
+            close(fd);
         } else {
             IOLoop::getInstance()->modify(fd, EPOLLIN | EPOLLET);
         }
@@ -60,13 +65,23 @@ int LogicHandler::handle(epoll_event event) {
         LOG_SEV_WITH_LOC("received length:" << std::to_string(received), debug);
         if (received > 0) {
             buffer_[received] = 0;
+            memcpy(&input[strlen(input)], buffer_, (size_t)received);
             LOG_SEV_WITH_LOC("receive:" << buffer_, debug);
             IOLoop::getInstance()->modify(fd, EPOLLOUT | EPOLLET);
-        } else {
+        } else if (received == 0){
             buffer_[0] = 0;
-            close(fd);
             LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
             IOLoop::getInstance()->remove(fd);
+            close(fd);
+        } else {
+            if (errno != EAGAIN && errno != EWOULDBLOCK) {
+                buffer_[0] = 0;
+                LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
+                IOLoop::getInstance()->remove(fd);
+                close(fd);
+            } else {
+                LOG_SEV_WITH_LOC("get EAGAIN | EWOULDBLOCK from fd:" << fd, debug);
+            }
         }
     }
     return 0;

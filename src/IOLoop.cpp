@@ -7,6 +7,7 @@
 #include "configs.h"
 #include <chrono>
 #include <memory>
+#include "ServerHandler.h"
 
 SafeQueue<std::shared_ptr<LoopEvent_t>> queue;
 
@@ -27,7 +28,11 @@ void IOLoop::start() {
             auto handler = handlers_[fd];
             if (handler) {
                 LOG_SEV_WITH_LOC("do handle, fd:" << fd, debug);
-                queue.enqueue(std::shared_ptr<LoopEvent_t>(new LoopEvent_t(handler, events[i])));
+                if (fd == ServerHandler::serverFd) {
+                    handler->handle(events[i]);
+                } else {
+                    queue.enqueue(std::shared_ptr<LoopEvent_t>(new LoopEvent_t(handler, events[i])));
+                }
             } else {
                 LOG_SEV_WITH_LOC("get empty handler, give up, fd:" << fd, error);
             }
@@ -60,6 +65,7 @@ void IOLoop::add(int fd, std::shared_ptr<Handler> handler, unsigned int events) 
     e.data.fd = fd;
     if (epoll_ctl(epollFd_, EPOLL_CTL_ADD, fd, &e) < 0) {
         LOG_SEV_WITH_LOC("failed to create epoll event, fd: " << fd, error);
+        IOLoop::remove(fd);
     }
 }
 
@@ -69,6 +75,7 @@ void IOLoop::modify(int fd, unsigned int events) {
     e.data.fd = fd;
     if (epoll_ctl(epollFd_, EPOLL_CTL_MOD, fd, &e) < 0) {
         LOG_SEV_WITH_LOC("failed to modify epoll event, fd: " << fd, error);
+        IOLoop::remove(fd);
     }
 }
 
