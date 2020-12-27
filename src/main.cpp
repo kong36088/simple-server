@@ -5,7 +5,7 @@
 #include "utils.h"
 
 int main() {
-    gInitLog(error, error);
+    gInitLog(debug, debug);
 
     ServerHandler server(SERV_PORT);
     IOLoop::getInstance()->start();

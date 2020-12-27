@@ -76,10 +76,13 @@ std::string Http::encode(std::shared_ptr<HttpProperty> property, int code, const
     if (property->headers.find("Content-Length") == property->headers.end()) {
         property->headers["Content-Length"] = std::to_string(property->body.size());
     }
+    property->headers["Connection"] = "Close";
     for (auto it = property->headers.begin(); it != property->headers.end(); ++it) {
         ss << it->first << ": " << it->second << "\r\n";
     }
-    ss << "\r\n" << property->body;
+    if (!property->body.empty()) {
+        ss << "\r\n" << property->body;
+    }
 
     return ss.str();
 }

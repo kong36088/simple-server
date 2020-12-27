@@ -45,13 +45,15 @@ int LogicHandler::handle(epoll_event event) {
                 rspProperty->body = property->body;
                 msg = http.encode(rspProperty, 200, "OK").c_str();
             } catch (Exception e) {
+                LOG_SEV_WITH_LOC("http exception:" << e.what(), error);
                 msg = e.what();
             }
             written = write(fd, msg, strlen(msg));
-            LOG_SEV_WITH_LOC("send:" << msg, debug);
+            LOG_SEV_WITH_LOC("send:" << msg << " , writen:" << std::to_string(written), debug);
             if (written < 0) {
                 LOG_SEV_WITH_LOC("write failed, fd:" << fd, error);
             }
+            doResponse = true;
             IOLoop::getInstance()->remove(fd);
             close(fd);
         } else {
@@ -65,22 +67,26 @@ int LogicHandler::handle(epoll_event event) {
         LOG_SEV_WITH_LOC("received length:" << std::to_string(received), debug);
         if (received > 0) {
             buffer_[received] = 0;
-            memcpy(&input[strlen(input)], buffer_, (size_t)received);
+            memcpy(&input[strlen(input)], buffer_, (size_t) received);
             LOG_SEV_WITH_LOC("receive:" << buffer_, debug);
             IOLoop::getInstance()->modify(fd, EPOLLOUT | EPOLLET);
-        } else if (received == 0){
-            buffer_[0] = 0;
-            LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
-            IOLoop::getInstance()->remove(fd);
-            close(fd);
         } else {
-            if (errno != EAGAIN && errno != EWOULDBLOCK) {
-                buffer_[0] = 0;
-                LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
-                IOLoop::getInstance()->remove(fd);
-                close(fd);
-            } else {
-                LOG_SEV_WITH_LOC("get EAGAIN | EWOULDBLOCK from fd:" << fd, debug);
+            if (doResponse) {
+                if (received == 0) {
+                    buffer_[0] = 0;
+                    LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
+                    IOLoop::getInstance()->remove(fd);
+                    close(fd);
+                } else {
+                    if (errno != EAGAIN && errno != EWOULDBLOCK) {
+                        buffer_[0] = 0;
+                        LOG_SEV_WITH_LOC("disconnect from fd:" << fd, debug);
+                        IOLoop::getInstance()->remove(fd);
+                        close(fd);
+                    } else {
+                        LOG_SEV_WITH_LOC("get EAGAIN | EWOULDBLOCK from fd:" << fd, debug);
+                    }
+                }
             }
         }
     }

@@ -17,6 +17,7 @@ private:
     char buffer_[MAX_LINE] = {0};
     char input[MAX_LINE] = {0};
     Http http;
+    bool doResponse = false;
 public:
     LogicHandler() : Handler() {};
 

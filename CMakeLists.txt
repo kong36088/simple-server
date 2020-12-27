@@ -3,7 +3,7 @@ PROJECT(simple-server)
 set(TARGET_NAME simple-server)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pg")
 
 # 开启调试：-DDEBUG=ON
 OPTION(DEBUG
