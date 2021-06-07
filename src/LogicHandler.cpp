@@ -57,7 +57,7 @@ int LogicHandler::handle(epoll_event event) {
             IOLoop::getInstance()->remove(fd);
             close(fd);
         } else {
-            IOLoop::getInstance()->modify(fd, EPOLLIN | EPOLLET);
+            IOLoop::getInstance()->modify(fd, EPOLLIN);
         }
         buffer_[0] = 0;
     }
@@ -69,7 +69,7 @@ int LogicHandler::handle(epoll_event event) {
             buffer_[received] = 0;
             memcpy(&input[strlen(input)], buffer_, (size_t) received);
             LOG_SEV_WITH_LOC("receive:" << buffer_, debug);
-            IOLoop::getInstance()->modify(fd, EPOLLOUT | EPOLLET);
+            IOLoop::getInstance()->modify(fd, EPOLLOUT);
         } else {
             if (doResponse) {
                 if (received == 0) {

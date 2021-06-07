@@ -69,7 +69,7 @@ std::shared_ptr<HttpProperty> Http::doParse(const std::string &req) throw(Except
 
 void Http::reset() noexcept {}
 
-std::string Http::encode(std::shared_ptr<HttpProperty> property, int code, const std::string& codeMsg) {
+std::string Http::encode(std::shared_ptr<HttpProperty> property, int code, const std::string &codeMsg) {
     std::stringstream ss;
 
     ss << property->httpVersion << " " << code << " " << codeMsg << "\r\n";
@@ -80,8 +80,9 @@ std::string Http::encode(std::shared_ptr<HttpProperty> property, int code, const
     for (auto it = property->headers.begin(); it != property->headers.end(); ++it) {
         ss << it->first << ": " << it->second << "\r\n";
     }
+    ss << "\r\n";
     if (!property->body.empty()) {
-        ss << "\r\n" << property->body;
+        ss << property->body;
     }
 
     return ss.str();

@@ -16,13 +16,13 @@ ServerHandler::ServerHandler(int port) {
     sockaddr_in serverAddr;
 
     // create socket
-    ServerHandler::serverFd = socket(AF_INET, SOCK_STREAM, 0);
+    ServerHandler::serverFd = socket(AF_INET, SOCK_STREAM | SO_REUSEPORT, 0);
     setNonBlocking(ServerHandler::serverFd); // non-blocking
     LOG_SEV_WITH_LOC("server listen fd: " << ServerHandler::serverFd, debug);
 
     // start epoll
     std::shared_ptr<Handler> handler = std::shared_ptr<Handler>(new ServerHandler);
-    IOLoop::getInstance()->add(ServerHandler::serverFd, handler, EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLERR | EPOLLET);
+    IOLoop::getInstance()->add(ServerHandler::serverFd, handler, EPOLLIN | EPOLLOUT | EPOLLHUP | EPOLLERR);
 
     // bind address
     bzero(&serverAddr, sizeof(serverAddr));
@@ -55,7 +55,7 @@ int ServerHandler::handle(epoll_event event) {
 
     LOG_SEV_WITH_LOC("accept new client, client:" << inet_ntoa(clientAddr.sin_addr) << " port: " << ntohs(clientAddr.sin_port) << " fd:" << clientFd, debug);
     std::shared_ptr<Handler> handler(new LogicHandler());
-    IOLoop::getInstance()->add(clientFd, handler, EPOLLIN | EPOLLOUT | EPOLLET);
+    IOLoop::getInstance()->add(clientFd, handler, EPOLLIN);
 
     return 0;
 }
